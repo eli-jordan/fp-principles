@@ -26,14 +26,21 @@ object applicatives {
 
   // Exercise 1 - Implement an applicative instance for Maybe
   class MaybeApplicative extends MaybeFunctor with Applicative[Maybe] {
-    override def pure[A](a: A): Maybe[A] = ???
-    override def zip[A, B](fa: Maybe[A], fb: Maybe[B]): Maybe[(A, B)] = ???
+    override def pure[A](a: A): Maybe[A] = Defined(a)
+    override def zip[A, B](fa: Maybe[A], fb: Maybe[B]): Maybe[(A, B)] = (fa, fb) match {
+      case (Defined(a), Defined(b)) => Defined((a, b))
+      case _                        => Undefined
+    }
   }
 
   // Exercise 2 - Implement an applicative instance for CanFail
   class CanFailApplicative[E] extends CanFailFunctor[E] with Applicative[CanFail[E, ?]] {
-    override def pure[A](a: A): CanFail[E, A] = ???
-    override def zip[A, B](fa: CanFail[E, A], fb: CanFail[E, B]): CanFail[E, (A, B)] = ???
+    override def pure[A](a: A): CanFail[E, A] = Success(a)
+    override def zip[A, B](fa: CanFail[E, A], fb: CanFail[E, B]): CanFail[E, (A, B)] = (fa, fb) match {
+      case (Success(a), Success(b)) => Success((a, b))
+      case (Failure(e), _)        => Failure(e)
+      case (_, Failure(e))        => Failure(e)
+    }
   }
 
   object Applicative {
@@ -49,13 +56,17 @@ object applicatives {
   import functors._
 
   // Exercise 3 - Implement sequence
-  def sequence[F[_]: Applicative, A](fas: List[F[A]]): F[List[A]] = ???
+  def sequence[F[_]: Applicative, A](fas: List[F[A]]): F[List[A]] = {
+    fas.foldRight(Applicative[F].pure(List.empty[A])) { (fa: F[A], acc: F[List[A]]) =>
+      acc.zip(fa).map { case (as, a) => a :: as }
+    }
+  }
 
   // Exercise 4 - Convert a list of strings to Int using the toInt helper
   // Tip: Use map and sequence
   def asInts(xs: List[String]): CanFail[Throwable, List[Int]] = {
     def toInt(a: String): CanFail[Throwable, Int] = CanFail(a.toInt)
-
-    ???
+    val maybeInts: List[CanFail[Throwable, Int]] = xs.map(toInt)
+    sequence(maybeInts)
   }
 }

@@ -28,11 +28,12 @@ class TypeclassesSpec extends FlatSpec with MustMatchers {
 
   it should "combine a List[String]" taggedAs tag.combine2 in {
     //TODO: Exercise 2 - Implement this test
+    combine2(List("1", "2", "3"), concat) mustBe "123"
   }
 
   behavior of "combine3"
   it should "combine a List[Int]" taggedAs tag.combine3 in {
-    combine3(List(1, 2, 3)) mustBe 5
+    combine3(List(1, 2, 3)) mustBe 6
   }
 
   it should "combine a List[String]" taggedAs tag.combine3 in {
@@ -41,7 +42,7 @@ class TypeclassesSpec extends FlatSpec with MustMatchers {
 
   behavior of "combine4"
   it should "combine a List[Int]" taggedAs tag.combine4 in {
-    List(1, 2, 3).combine4 mustBe 5
+    List(1, 2, 3).combine4 mustBe 6
   }
 
   it should "combine a List[String]" taggedAs tag.combine4 in {

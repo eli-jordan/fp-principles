@@ -25,12 +25,18 @@ object monads {
 
   // Exercise 1 - Implement a Monad instance for Maybe
   class MaybeMonad extends MaybeApplicative with Monad[Maybe] {
-    override def flatMap[A, B](fa: Maybe[A])(fn: A => Maybe[B]): Maybe[B] = ???
+    override def flatMap[A, B](fa: Maybe[A])(fn: A => Maybe[B]): Maybe[B] = fa match {
+      case Defined(a) => fn(a)
+      case Undefined  => Undefined
+    }
   }
 
   // Exercise 2 - Implement  a Monad instance for CanFail
   class CanFailMonad[E] extends CanFailApplicative[E] with Monad[CanFail[E, ?]] {
-    override def flatMap[A, B](fa: CanFail[E, A])(fn: A => CanFail[E, B]): CanFail[E, B] = ???
+    override def flatMap[A, B](fa: CanFail[E, A])(fn: A => CanFail[E, B]): CanFail[E, B] = fa match {
+      case Success(a) => fn(a)
+      case Failure(e)  => Failure(e)
+    }
   }
 
   object Monad {
@@ -48,5 +54,6 @@ object monads {
   // This function should fist run the fa effect, and inspect the boolean value it holds.
   // If the boolean is true, then the ifTrue effect should be run, if its false the ifFalse
   // effect should be run.
-  def ifM[F[_], B](fa: F[Boolean])(ifTrue: => F[B], ifFalse: => F[B])(implicit F: Monad[F]): F[B] = ???
+  def ifM[F[_], B](fa: F[Boolean])(ifTrue: => F[B], ifFalse: => F[B])(implicit F: Monad[F]): F[B] =
+    F.flatMap(fa)(a => if (a) ifTrue else ifFalse)
 }
